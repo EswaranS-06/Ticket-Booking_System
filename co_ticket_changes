@@ -7,17 +7,18 @@ class train():
         for i in range(3):
             self.sections.append(sleeper(False, 20))
             
+        for i in range(4):
+            print(self.sections[i])
+            
     def display(self):
         for section in self.sections:
-            #for i in range(4):
-            print(section)
             section.display()
             
         
     def TotalReservedSeats(self, seat_type=None):
         max_seats = 0
         for section in self.sections:
-            max_seats += sum(section.reservedSeats(seat_type))
+            max_seats += sum(section.numSeats(seat_type))
         return max_seats
     
     def availableSection(self, num_seats, seat_type, is_takkal=1):
@@ -26,41 +27,53 @@ class train():
                 continue
             else:
                 return i
-        else:
-            return #worst case <--------------------------------
-        
+        return None  # Return None if no section is available
+
     def booking(self):
         rev_type = int(input("1. Takkal\n2. Reservation\nEnter (1,2): "))
         if rev_type == 1 and self.TotalReservedSeats() < 50:
             self.takkalBook()
+        elif rev_type == 2:
+            self.reserveBook()
         else:
-            pass
-        
+            print("Invalid option or no seats available for Takkal.")
+
     def takkalBook(self):
         num_seats = int(input("How many tickets [MAX:20]: "))
+        if num_seats < 1 or num_seats > 20:
+            print("Invalid number of tickets.")
+            return
         seat_type = int(input("1. Lower\n2. Middle\n3. Upper\nEnter (1,2,3): "))-1
+        if seat_type not in [0,1,2]:
+            print("Invalid seat type.")
+            return
         info_type = int(input("1. Book every ticket in your\n2. Give Names for every Ticket\nOnce selected process is not Revertable\nEnter your choise (1,2): "))
         if info_type == 1:
             c = customer()
             self.customers.append(c.setInfo())
             temp = self.availableSection(num_seats, seat_type, 0)
+            if temp is None:
+                print("No available section for requested seats.")
+                return
             for i in range(num_seats):
                 self.sections[temp].book(seat_type, self.customers[-1])
-                
-            else:
-                print(f"Succussefullly Booked {num_seats} seats\nin the Name of {self.customers[-1][0]}")
+            print(f"Successfully Booked {num_seats} seats\nin the Name of {self.customers[-1][0]}")
         elif info_type == 2:
             temp = self.availableSection(num_seats, seat_type, 0)
+            if temp is None:
+                print("No available section for requested seats.")
+                return
             for i in range(num_seats):
                 c = customer()
                 self.customers.append(c.setInfo())
                 self.sections[temp].book(seat_type, self.customers[-1])
-                
-            else:
-                print(f"Succussefullly Booked {num_seats} seats\nin the Name of {self.customers[-1][0]}")
-                
+            print(f"Successfully Booked {num_seats} seats with individual names.")
+        else:
+            print("Invalid info type.")
+
     def reserveBook(self):
-        pass
+        print("Reservation booking not implemented yet.")
+        # Implement reservation logic here
 
 class sleeper():
     def __init__(self, is_takkal, num_seats):
@@ -69,15 +82,15 @@ class sleeper():
         self.is_takkal = is_takkal
          
     def __str__(self):
-        return( f"{'Takkal' if self.is_takkal else 'Reservation'} : {self.reservedSeats()}")
+        return( f"{'Takkal' if self.is_takkal else 'Reservation'} : {self.numSeats()}")
                 
     def isTakkal(self):
         return self.is_takkal
     
     def availableSeats(self, seat_type):
-        return self.max_seat - len(self.seating[seat_type])
+        return self.max_seat - sum(self.numSeats(seat_type)) 
     
-    def reservedSeats(self, seat_type=None):
+    def numSeats(self, seat_type=None):
         available_seats = []
         if seat_type == None:
             for section in self.seating:
@@ -90,32 +103,30 @@ class sleeper():
         self.seating[seat_type].append(info)
         
     def display(self):
-        print(tb(self.seating, tablefmt="fancy_grid"))
-        #print(self.seating)   
+        print(tb(self.seating, tablefmt="grid"))  # Changed to grid for console
+            
             
 class customer():
     def __init__(self):
         self.info = []
-        
+
     def setInfo(self):
         name = input("Enter your Name: ")
-        try :
-            age = int(input("Enter your Age: "))
+        age = input("Enter your Age: ")
+        try:
+            age = int(age)
         except ValueError:
             age = 0
         self.info.append(name)
         self.info.append(age)
-        # self.info.append("Rex")
-        # self.info.append(20)
         return self.info
     
     def getInfo(self):
         return self.info
-    
-    
+
+# Create train object once to preserve bookings
 t = train()
-while True:        
- 
+while True:
     t.booking()
     i = input()
     if i == "o":
