@@ -30,3 +30,4 @@ Style Codes:
     Underline : 4
     Reversed : 7
       """)
+print("\033[41mInvalid Input\033[0m")
