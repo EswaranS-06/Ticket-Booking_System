@@ -1,11 +1,15 @@
 from tabulate import tabulate as tb
 class train():
-    def __init__(self):
+    def __init__(self, train_name):
+        self.train_name = train_name
         self.customers = []
         self.sections = []
         self.sections.append(sleeper(True, 20))
         for i in range(3):
             self.sections.append(sleeper(False, 20))
+            
+    def __str__(self):
+        return self.train_name
             
     def display(self):
         for section in self.sections:
@@ -32,26 +36,30 @@ class train():
         rev_type = int(input("1. Takkal\n2. Reservation\nEnter (1,2): "))
         if rev_type == 1:
             if self.TotalReservedSeats() > 50:
-                self.booking_type(0)
+                self.bookingType(0)
             else :
                 print("Sorry Takkal is Not open till now")
             
         elif rev_type == 2:
-            self.booking_type(1)
+            self.bookingType(1)
             
         else:
-            print("Invalid Input Try To Use Only the (1 or 2)")
+            print("\033[41mInvalid Input\033[0m Try To Use Only the (1 or 2)")
                      
-    def booking_type(self, is_takkal):
-        seat_type = int(input("1. Lower\n2. Middle\n3. Upper\nEnter (1,2,3): "))-1
-        if not seat_type in range(0,3):
-            print("Invalid selection try to use only the above options")
+    def bookingType(self, is_takkal):
+        try:
+            seat_type = int(input("1. Lower\n2. Middle\n3. Upper\nEnter (1,2,3): "))-1
+            if not seat_type in range(0,3):
+                print("\033[41mInvalid selection try to use only the above options\033[0m")
+                return
+            num_seats = int(input("How many tickets [MAX:20]: "))
+            if num_seats > 20:
+                print("Sorry the Maximum limit is 20")
+                return
+            info_type = int(input("1. Book every ticket in your\n2. Give Names for every Ticket\nOnce selected process is not Revertable\nEnter your choise (1,2): "))
+        except (ValueError, TypeError):
+            print("\033[41mInvalid Input\033[0m")
             return
-        num_seats = int(input("How many tickets [MAX:20]: "))
-        if num_seats > 20:
-            print("Sorry the Maximum limit is 20")
-            return
-        info_type = int(input("1. Book every ticket in your\n2. Give Names for every Ticket\nOnce selected process is not Revertable\nEnter your choise (1,2): "))
         
         if info_type == 1:
             c = customer()
@@ -113,7 +121,7 @@ class customer():
         name = input("Enter your Name: ")
         try :
             age = int(input("Enter your Age: "))
-        except ValueError:
+        except (ValueError, TypeError):
             age = 0
         self.info.append(name)
         self.info.append(age)
@@ -124,22 +132,64 @@ class customer():
     def getInfo(self):
         return self.info
     
-    
-t = train()
+t = train("Chennai to Thiruchy")
+t2 = train("Chennai to Madurai")   
+trains = [t,t2]
 def main():
+    global trains
     dec = input("Are you looking to Book Ticket? (Yes[y]/No[n])").strip().lower()
-    if "n" in dec:
+    if 'y' in dec:
+        pass
+    
+    elif "n" in dec:
         print("Your Welcome!!!")
         return
-    elif "a" == dec:
-        return #<------ add train adding function
+    elif "a" in dec:
+        print("\033[34;47m You are currently adding a New Train Route\033[0m")
+        name = input("Enter the Train Route: ")
+        t = train(name)
+        trains.append(t)
+        main()
+    else:
+        print("\033[41mInvalid Input\033[0m")
     while True:        
         print("""
             Hello your Welcome to the OUR
-                \033[;34mTicket Booking Service \033[0m""")
+                \033[;34mTicket Booking Service \033[0m
+                """)
+
+        for i in range(len(trains)):
+            print(f"\n{i+1}. {trains[i]}")
+            
+        print()  
+        try :
+            sel = int(input("Select the Train route: "))-1
+        except (ValueError, TypeError):
+            print("\033[41mInvalid Input\033[0m")
+            continue
         
+        print(trains[sel])
         
-        i = input()
+        while True:
+            print("""
+                  1. Ticket Booking
+                  2. Reserved Seats
+
+                  0. Exit
+                  """)
+            try :
+                c = int(input("Enter your choise: "))
+            except (ValueError, TypeError):
+                print("\033[41mInvalid Input\033[0m")
+                continue
+            
+            if c == 1:
+                trains[sel].booking()
+            
+            elif c == 2:
+                trains[sel].display()
+            elif c == 3:
+                break
         
         
 if __name__ == main():
